@@ -18,6 +18,13 @@ internal static class GravityFlipControlsPatch {
 		__instance.CancelHeroJump();
 	}
 
+	[HarmonyPatch(nameof(HeroController.HeroJumpNoEffect))]
+	[HarmonyPostfix]
+	private static void FlipOnBackflip(HeroController __instance) {
+		V6Plugin.FlipGravity();
+		__instance.CancelHeroJump();
+	}
+
 	[HarmonyPatch(nameof(HeroController.DoDoubleJump))]
 	[HarmonyPostfix]
 	private static void FlipOnDoubleJump(HeroController __instance) {
