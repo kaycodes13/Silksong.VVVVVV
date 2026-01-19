@@ -31,12 +31,11 @@ internal static class FsmFlipUtil {
 			state.InsertLambdaMethod(0, FlipState);
 
 		void FlipState(Action finished) {
-			if (isFlipped.Value == V6Plugin.GravityIsFlipped)
-				return;
-
-			isFlipped.Value = V6Plugin.GravityIsFlipped;
-			affectedActions.FlipHeroMotion(hc);
-			otherEdits?.Invoke();
+			if (isFlipped.Value != V6Plugin.GravityIsFlipped) {
+				isFlipped.Value = V6Plugin.GravityIsFlipped;
+				affectedActions.FlipHeroMotion(hc);
+				otherEdits?.Invoke();
+			}
 			finished();
 		}
 	}
