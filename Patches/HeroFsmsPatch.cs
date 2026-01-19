@@ -3,6 +3,7 @@ using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Silksong.FsmUtil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VVVVVV.Utils;
@@ -183,9 +184,32 @@ internal static class HeroFsmsPatch {
 				fsm.GetState("Start Sprint")!,
 				airSprintL,
 				airSprintR,
+				fsm.GetState("Start Attack")!,
 			],
-			affectedStates: [fsm.GetState("Start Sprint")!]
+			affectedStates: [
+				fsm.GetState("Start Sprint")!,
+				fsm.GetState("Bump Up")!,
+				fsm.GetState("Bump Up 2")!,
+				fsm.GetState("Witch Lash Start")!,
+				fsm.GetState("Reaper End")!,
+				fsm.GetState("Wanderer Recoil")!,
+				fsm.GetState("RecoilStab Dash")!,
+				fsm.GetState("Warrior Leap")!,
+				fsm.GetState("Warrior Slash")!,
+				fsm.GetState("Shaman Leap")!,
+				fsm.GetState("Shaman Slash")!,
+			],
+			otherEdits: ReaperCurveFloat
 		);
+
+		void ReaperCurveFloat() {
+			CurveFloat curveFloat = fsm.GetState("Reaper Upper")!.GetFirstActionOfType<CurveFloat>()!;
+			AnimationCurve anim = curveFloat.animCurve.curve;
+			List<Keyframe> newKeys = [];
+			foreach (Keyframe key in anim.keys)
+				newKeys.Add(new(key.time, -key.value, key.inTangent, key.outTangent, key.inWeight, key.outWeight));
+			anim.SetKeys([.. newKeys]);
+		}
 	}
 
 }
