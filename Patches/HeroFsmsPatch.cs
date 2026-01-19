@@ -15,7 +15,8 @@ internal static class HeroFsmsPatch {
 
 	private static bool
 		didDownAttackEdit = false,
-		didSprintEdit = false;
+		didSprintEdit = false,
+		didChargeAttackEdit = false;
 
 
 	[HarmonyPatch(typeof(PlayerData), nameof(PlayerData.SetupNewPlayerData))]
@@ -44,6 +45,8 @@ internal static class HeroFsmsPatch {
 			EditDownAttacks(__instance);
 		if (!didSprintEdit)
 			EditSprint(__instance);
+		if (!didChargeAttackEdit)
+			EditChargeAttacks(__instance);
 	}
 
 
@@ -58,10 +61,12 @@ internal static class HeroFsmsPatch {
 			EditDownAttacks(hc);
 		else if (!didSprintEdit && ReferenceEquals(__instance, hc.sprintFSM))
 			EditSprint(hc);
+		else if (!didChargeAttackEdit && __instance.FsmName == "Nail Arts")
+			EditChargeAttacks(hc);
 	}
 
 	private static void ResetEditedState() {
-		didDownAttackEdit = didSprintEdit = false;
+		didDownAttackEdit = didSprintEdit = didChargeAttackEdit = false;
 	}
 
 
@@ -209,6 +214,37 @@ internal static class HeroFsmsPatch {
 			foreach (Keyframe key in anim.keys)
 				newKeys.Add(new(key.time, -key.value, key.inTangent, key.outTangent, key.inWeight, key.outWeight));
 			anim.SetKeys([.. newKeys]);
+		}
+	}
+
+	private static void EditChargeAttacks(HeroController hc) {
+		didChargeAttackEdit = true;
+
+		PlayMakerFSM fsm = hc.gameObject.GetFsmPreprocessed("Nail Arts")!;
+
+		fsm.DoGravityFlipEdit(
+			hc,
+			checkStates:
+			[fsm.GetState("Take Control")!],
+			otherEdits: ConditionalVelocities
+		);
+
+		void ConditionalVelocities() {
+			// architect, beast
+			ConvertBoolToFloat[] vels = [
+				fsm.GetState("Antic Drill")!.GetFirstActionOfType<ConvertBoolToFloat>()!,
+				fsm.GetState("Warrior2 Leap")!.GetFirstActionOfType<ConvertBoolToFloat>()!,
+			];
+			foreach(var v in vels) {
+				v.trueValue.Value *= -1;
+				v.falseValue.Value *= -1;
+			}
+
+			// witch and other spinning attacks
+			FloatClamp witch = fsm.GetState("Queued Spin")!.GetFirstActionOfType<FloatClamp>()!;
+			witch.minValue.Value *= -1;
+			witch.maxValue.Value *= -1;
+			(witch.minValue, witch.maxValue) = (witch.maxValue, witch.minValue);
 		}
 	}
 
