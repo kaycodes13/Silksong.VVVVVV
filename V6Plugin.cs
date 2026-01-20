@@ -1,13 +1,13 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using GlobalEnums;
 using HarmonyLib;
 using Silksong.ModMenu.Elements;
 using Silksong.ModMenu.Plugin;
 using Silksong.ModMenu.Screens;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace VVVVVV;
@@ -115,7 +115,11 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		}
 	}
 
-	private static void QueueRespawnHero() {
+	//private IEnumerator CeilingCheckCoro() {
+	//	Edge
+	//}
+
+	internal static void QueueRespawnHero() {
 		if (GameManager.SilentInstance is not GameManager gm || gm.IsNonGameplayScene())
 			return;
 
@@ -128,9 +132,22 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 					yield return unpauseIterator.Current;
 			}
 
-			yield return new WaitFrameAndPaused();
+			yield return new WaitForEndOfFrame();
 
-			GameManager.instance.HazardRespawn();
+			HeroController.instance.doingHazardRespawn = true;
+			HeroController.instance.SetState(ActorStates.no_input);
+			HeroController.instance.heroInPositionDelayed += ForceRemaskerUpdate;
+			gm.HazardRespawn();
+		}
+
+		void ForceRemaskerUpdate(bool _) {
+			Remasker[] remaskers = FindObjectsByType<Remasker>(FindObjectsSortMode.None);
+			foreach (Remasker rem in remaskers) {
+				bool active = rem.gameObject.activeSelf;
+				rem.gameObject.SetActive(false);
+				rem.gameObject.SetActive(active);
+			}
+			HeroController.instance.heroInPositionDelayed -= ForceRemaskerUpdate;
 		}
 	}
 
