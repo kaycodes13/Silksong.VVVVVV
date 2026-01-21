@@ -25,7 +25,6 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 
 	private ConfigEntry<KeyCode> RespawnKey { get; set; } = null!;
 	ChoiceElement<KeyCode>? respawnKeyOption = null;
-	private static float respawnTimer = 0;
 	private static readonly List<KeyCode> bindableKeys = [
 		KeyCode.None,
 		KeyCode.F3,
@@ -44,6 +43,12 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		KeyCode.RightAlt,
 	];
 
+	private const float FLIP_TIME_LIMIT = 0.1f;
+	private const float RESPAWN_TIME_LIMIT = 5;
+
+	private static float flipTimer = 0;
+	private static float respawnTimer = 0;
+
 	private void Awake() {
 		Harmony.PatchAll();
 		Log = Logger;
@@ -52,7 +57,6 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		if (!bindableKeys.Contains(RespawnKey.Value))
 			RespawnKey.Value = KeyCode.None;
 		RespawnKey.SettingChanged += RespawnKeyChanged;
-		StartCoroutine(RespawnCoro());
 
 		Logger.LogInfo($"Plugin {Name} ({Id}) has loaded!");
 	}
@@ -60,9 +64,27 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 	private void OnDestroy() {
 		Harmony.UnpatchSelf();
 		if (GravityIsFlipped) {
-			FlipGravity(HeroController.instance);
+			FlipGravity(HeroController.instance, force: true);
 			GravityIsFlipped = false;
 		}
+	}
+
+	private void Update() {
+		if (
+			GameManager.SilentInstance is GameManager gm
+			&& gm.IsGameplayScene() && !gm.IsGamePaused()
+			&& !HeroController.instance.controlReqlinquished
+			&& respawnTimer <= 0
+			&& RespawnKey.Value != KeyCode.None && Input.GetKeyDown(RespawnKey.Value)
+		) {
+			respawnTimer = RESPAWN_TIME_LIMIT;
+			QueueRespawnHero();
+		}
+
+		if (respawnTimer > 0)
+			respawnTimer -= Time.deltaTime;
+		if (flipTimer > 0)
+			flipTimer -= Time.deltaTime;
 	}
 
 	public string ModMenuName() => Name;
@@ -94,30 +116,6 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		if (respawnKeyOption != null && respawnKeyOption.Value != RespawnKey.Value)
 			respawnKeyOption.Value = RespawnKey.Value;
 	}
-
-	private IEnumerator RespawnCoro() {
-		while(true) {
-			if (
-				enabled
-				&& GameManager.SilentInstance is GameManager gm
-				&& gm.IsGameplayScene()
-				&& !gm.IsGamePaused()
-				&& respawnTimer <= 0
-				&& RespawnKey.Value != KeyCode.None
-				&& Input.GetKeyDown(RespawnKey.Value)
-			) {
-				respawnTimer = 5;
-				QueueRespawnHero();
-			}
-			if (respawnTimer > 0)
-				respawnTimer -= Time.deltaTime;
-			yield return null;
-		}
-	}
-
-	//private IEnumerator CeilingCheckCoro() {
-	//	Edge
-	//}
 
 	internal static void QueueRespawnHero() {
 		if (GameManager.SilentInstance is not GameManager gm || gm.IsNonGameplayScene())
@@ -151,11 +149,12 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		}
 	}
 
-	internal static void FlipGravity(HeroController hc, bool jumpBoost = false) {
-		if (!hc)
+	internal static void FlipGravity(HeroController hc, bool jumpBoost = false, bool force = false) {
+		if (!hc || (flipTimer > 0 && !force))
 			return;
 
 		GravityIsFlipped = !GravityIsFlipped;
+		flipTimer = FLIP_TIME_LIMIT;
 
 		hc.MAX_FALL_VELOCITY *= -1;
 		hc.MAX_FALL_VELOCITY_WEIGHTED *= -1;

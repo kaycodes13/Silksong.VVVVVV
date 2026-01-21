@@ -36,14 +36,14 @@ internal static class GravityFlipControlsPatch {
 	[HarmonyPrefix]
 	private static void FlipOnHazardRespawn(HeroController __instance) {
 		if (V6Plugin.GravityIsFlipped)
-			V6Plugin.FlipGravity(__instance);
+			V6Plugin.FlipGravity(__instance, force: true);
 	}
 
 	[HarmonyPatch(nameof(HeroController.Respawn))]
 	[HarmonyPrefix]
 	private static void FlipOnRespawn(HeroController __instance) {
 		if (V6Plugin.GravityIsFlipped)
-			V6Plugin.FlipGravity(__instance);
+			V6Plugin.FlipGravity(__instance, force: true);
 	}
 
 }
