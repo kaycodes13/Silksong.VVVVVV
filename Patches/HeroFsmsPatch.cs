@@ -16,7 +16,8 @@ internal static class HeroFsmsPatch {
 	private static bool
 		didDownAttackEdit = false,
 		didSprintEdit = false,
-		didChargeAttackEdit = false;
+		didChargeAttackEdit = false,
+		didScrambleEdit = false;
 
 
 	[HarmonyPatch(typeof(PlayerData), nameof(PlayerData.SetupNewPlayerData))]
