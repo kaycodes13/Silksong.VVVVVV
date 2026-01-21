@@ -34,11 +34,11 @@ internal static class FsmFlipUtil {
 			if (isFlipped.Value == V6Plugin.GravityIsFlipped)
 				return;
 
-				isFlipped.Value = V6Plugin.GravityIsFlipped;
-				affectedActions.FlipHeroMotion(hc);
-				otherEdits?.Invoke();
-			}
+			isFlipped.Value = V6Plugin.GravityIsFlipped;
+			affectedActions.FlipHeroMotion(hc);
+			otherEdits?.Invoke();
 		}
+	}
 
 	/// <summary>
 	/// Simultaneously flips all hero-targeting y movements performed by the actions

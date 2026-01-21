@@ -163,6 +163,10 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		hc.FLOAT_SPEED *= -1;
 		hc.JUMP_SPEED *= -1;
 
+		hc.WALLSLIDE_ACCEL *= -1;
+		hc.WALLSLIDE_SHUTTLECOCK_VEL *= -1;
+		hc.WALLCLING_DECEL *= -1;
+
 		hc.DEFAULT_GRAVITY *= -1;
 		hc.AIR_HANG_GRAVITY *= -1;
 		hc.AIR_HANG_ACCEL *= -1;

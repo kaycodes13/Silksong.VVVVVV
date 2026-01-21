@@ -47,6 +47,8 @@ internal static class HeroFsmsPatch {
 			EditSprint(__instance);
 		if (!didChargeAttackEdit)
 			EditChargeAttacks(__instance);
+		if (!didScrambleEdit)
+			EditWallScramble(__instance);
 	}
 
 
@@ -63,10 +65,16 @@ internal static class HeroFsmsPatch {
 			EditSprint(hc);
 		else if (!didChargeAttackEdit && __instance.FsmName == "Nail Arts")
 			EditChargeAttacks(hc);
+		else if (!didScrambleEdit && ReferenceEquals(__instance, hc.wallScrambleFSM))
+			EditWallScramble(hc);
 	}
 
 	private static void ResetEditedState() {
-		didDownAttackEdit = didSprintEdit = didChargeAttackEdit = false;
+		didDownAttackEdit
+			= didSprintEdit
+			= didChargeAttackEdit
+			= didScrambleEdit
+			= false;
 	}
 
 
@@ -237,6 +245,44 @@ internal static class HeroFsmsPatch {
 			witch.minValue.Value *= -1;
 			witch.maxValue.Value *= -1;
 			(witch.minValue, witch.maxValue) = (witch.maxValue, witch.minValue);
+		}
+	}
+
+	private static void EditWallScramble(HeroController hc) {
+		didScrambleEdit = true;
+
+		PlayMakerFSM fsm = hc.wallScrambleFSM;
+		if (!fsm.Fsm.preprocessed)
+			fsm.Preprocess();
+
+		FsmState
+			startScramble = fsm.GetState("Start Scramble")!,
+			scrambleUp = fsm.GetState("Scramble Up")!;
+
+		fsm.DoGravityFlipEdit(
+			hc,
+			checkStates: [startScramble],
+			otherEdits: ConditionalVelocities
+		);
+
+		void ConditionalVelocities() {
+			ConvertBoolToFloat startVel =
+				startScramble.GetActionsOfType<ConvertBoolToFloat>()
+				.First(x => x.floatVariable.Name == "Scramble Speed");
+			startVel.trueValue.Value *= -1;
+			startVel.falseValue.Value *= -1;
+
+			ConvertBoolToFloat downForce =
+				scrambleUp.GetActionsOfType<ConvertBoolToFloat>()
+				.First(x => x.floatVariable.Name == "Down Force");
+			downForce.trueValue.Value *= -1;
+			downForce.falseValue.Value *= -1;
+
+			FloatCompare speedChecker =
+				scrambleUp.GetActionsOfType<FloatCompare>()
+				.First(x => x.float1.UsesVariable && x.float1.Name == "Y Speed");
+			speedChecker.float2.Value *= -1;
+			(speedChecker.lessThan, speedChecker.greaterThan) = (speedChecker.greaterThan, speedChecker.lessThan);
 		}
 	}
 
