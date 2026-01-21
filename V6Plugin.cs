@@ -13,7 +13,7 @@ using UnityEngine;
 namespace VVVVVV;
 
 [BepInAutoPlugin(id: "io.github.kaycodes13.vvvvvv")]
-[BepInDependency("org.silksong-modding.fsmutil", "0.3.5")]
+[BepInDependency("org.silksong-modding.fsmutil", "0.3.12")]
 [BepInDependency("org.silksong-modding.modmenu", "0.2.0")]
 public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 

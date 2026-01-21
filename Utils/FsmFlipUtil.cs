@@ -28,17 +28,17 @@ internal static class FsmFlipUtil {
 		FsmBool isFlipped = fsm.GetBoolVariable(FLIP_BOOL_NAME);
 
 		foreach(var state in checkStates)
-			state.InsertLambdaMethod(0, FlipState);
+			state.InsertMethod(0, FlipState);
 
-		void FlipState(Action finished) {
-			if (isFlipped.Value != V6Plugin.GravityIsFlipped) {
+		void FlipState() {
+			if (isFlipped.Value == V6Plugin.GravityIsFlipped)
+				return;
+
 				isFlipped.Value = V6Plugin.GravityIsFlipped;
 				affectedActions.FlipHeroMotion(hc);
 				otherEdits?.Invoke();
 			}
-			finished();
 		}
-	}
 
 	/// <summary>
 	/// Simultaneously flips all hero-targeting y movements performed by the actions
@@ -56,8 +56,11 @@ internal static class FsmFlipUtil {
 		GameObject hero = hc.gameObject;
 		switch (action) {
 			case SetVelocity2d ac:
-				if (ac.gameObject.GetSafe(ac) == hero)
+				if (ac.gameObject.GetSafe(ac) == hero) {
 					ac.y.Value *= -1;
+					Vector2 vec = ac.vector.Value;
+					ac.vector.Value = vec with { y = -vec.y };
+				}
 				return true;
 			case SetVelocityByScale ac:
 				if (ac.gameObject.GetSafe(ac) == hero)
