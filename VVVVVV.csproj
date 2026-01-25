@@ -23,6 +23,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/kaycodes13/Silksong.VVVVVV</RepositoryUrl>
+    <NeutralLanguage>EN</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
@@ -50,6 +51,8 @@
     <ItemGroup>
       <Binaries Include="$(TargetPath)" LocalDir="/" PackDir="/" />
       <Binaries Include="$(TargetDir)/$(TargetName).pdb" LocalDir="/" PackDir="/" />
+      <Binaries Include="Languages/*.json" PackDir="/Languages/" LocalDir="/Languages/" />
+      <Binaries Include="Languages/*.json" PackDir="/plugins/Languages/" />
     </ItemGroup>
     <PropertyGroup>
       <ThunderstoreDir>$(ProjectDir)/thunderstore</ThunderstoreDir>

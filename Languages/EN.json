@@ -1,0 +1,9 @@
+﻿{
+	"INV_NAME_DRESS_DJ": "Flipdown Cloak",
+	"GET_DOUBLEJUMP_1": "Fabled feather down, layered within the cloak. Invert gravity once more while airborne.",
+	"GET_DOUBLEJUMP_2": "Make dormant or reawaken this powerful ability in the mod options menu.",
+	"INV_DESC_DRESS_DJ_ON": "Protective garb lined with the uplifting down of a Fayforn and sewn through with flexible spines. Its fabled power is awoken.",
+	"INV_DESC_DRESS_DJ_OFF": "Protective garb lined with the uplifting down of a Fayforn and sewn through with flexible spines. Its fabled power lies dormant.",
+	"INV_DESC_DRESS_DJ_EXTRA": "When awakened from the mod options menu, hold DOWN to suppress the ability and float.",
+	"PROMPT_DJ": "Flip Gravity"
+}
