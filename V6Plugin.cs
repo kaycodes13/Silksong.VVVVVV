@@ -29,7 +29,7 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 	private Harmony Harmony { get; } = new(Id);
 
 	private ConfigEntry<bool>? faydownFlips;
-	ChoiceElement<bool>? flipdownOption;
+	private ChoiceElement<bool>? faydownOption;
 
 	private ConfigEntry<KeyCode>? respawnKey;
 	private ChoiceElement<KeyCode>? respawnKeyOption;
@@ -74,10 +74,10 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		void RespawnKeyChanged(object sender, System.EventArgs e) {
 			if (respawnKeyOption != null && respawnKeyOption.Value != respawnKey.Value)
 				respawnKeyOption.Value = respawnKey.Value;
-	}
+		}
 		void FlipdownChanged(object sender, System.EventArgs e) {
-			if (flipdownOption != null && flipdownOption.Value != faydownFlips.Value)
-				flipdownOption.Value = faydownFlips.Value;
+			if (faydownOption != null && faydownOption.Value != faydownFlips.Value)
+				faydownOption.Value = faydownFlips.Value;
 		}
 	}
 
@@ -126,7 +126,7 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		};
 		respawnKeyOption.OnValueChanged += key => respawnKey.Value = key;
 
-		ChoiceElement<bool> faydownOption = new(
+		faydownOption = new(
 			"Flipdown Cloak",
 			ChoiceModels.ForBool("Off", "On"),
 			"Make the Faydown Cloak flip gravity instead of jumping."
@@ -145,6 +145,10 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		if (GameManager.SilentInstance is not GameManager gm || gm.IsNonGameplayScene())
 			return;
 
+		var hc = HeroController.instance;
+		SpriteRenderer screenFader = gm.cameraCtrl.fadeFSM.transform
+			.Find("Screen Fader").GetComponent<SpriteRenderer>();
+
 		gm.StartCoroutine(RespawnHero());
 
 		IEnumerator RespawnHero() {
@@ -156,9 +160,13 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 
 			yield return new WaitForEndOfFrame();
 
-			HeroController.instance.doingHazardRespawn = true;
-			HeroController.instance.SetState(ActorStates.no_input);
-			HeroController.instance.heroInPositionDelayed += ForceRemaskerUpdate;
+			hc.doingHazardRespawn = true;
+			hc.SetState(ActorStates.no_input);
+			hc.heroInPositionDelayed += ForceRemaskerUpdate;
+			hc.StartInvulnerable(0.56f);
+			gm.cameraCtrl.FadeOut(CameraFadeType.HERO_HAZARD_DEATH);
+			while (screenFader.color.a < 1)
+				yield return null;
 			gm.HazardRespawn();
 		}
 
@@ -169,7 +177,7 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 				rem.gameObject.SetActive(false);
 				rem.gameObject.SetActive(active);
 			}
-			HeroController.instance.heroInPositionDelayed -= ForceRemaskerUpdate;
+			hc.heroInPositionDelayed -= ForceRemaskerUpdate;
 		}
 	}
 
