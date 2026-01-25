@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -145,6 +146,42 @@ internal static class ILUtil {
 
 	#endregion
 
+	#region Ldarg
+
+	/// <summary>
+	/// True if the opcode is <see cref="OpCodes.Ldarg"/>.
+	/// </summary>
+	internal static bool Ldarg(CodeInstruction x)
+		=> Ldarg(x, out int _);
+
+	/// <summary>
+	/// True if the opcode is <see cref="OpCodes.Ldarg"/> and the index matches.
+	/// </summary>
+	internal static bool Ldarg(CodeInstruction x, int index)
+		=> Ldarg(x, out int i) && index == i;
+
+	/// <summary>
+	/// True if the opcode is <see cref="OpCodes.Ldarg"/>.
+	/// If true, <paramref name="index"/> is set to the index loaded by the instruction.
+	/// </summary>
+	internal static bool Ldarg(CodeInstruction x, out int index) {
+		index = -1;
+		if (x.opcode == OpCodes.Ldarg_0)
+			index = 0;
+		else if (x.opcode == OpCodes.Ldarg_1)
+			index = 1;
+		else if (x.opcode == OpCodes.Ldarg_2)
+			index = 2;
+		else if (x.opcode == OpCodes.Ldarg_3)
+			index = 3;
+		else if ((x.opcode == OpCodes.Ldarg || x.opcode == OpCodes.Ldarg_S) && x.operand is ParameterBuilder pb)
+			index = pb.Position;
+
+		return index >= 0;
+	}
+
+	#endregion
+
 	#region Branching
 
 	/// <summary>
@@ -186,6 +223,15 @@ internal static class ILUtil {
 	internal static bool Call(CodeInstruction x, string name)
 		=> x.opcode == OpCodes.Call
 			&& x.operand is MethodInfo m && m.Name == name;
+
+	/// <summary>
+	/// True if the opcode is <see cref="OpCodes.Call"/> and the method name and type matches.
+	/// </summary>
+	internal static bool Call(CodeInstruction x, Type declaringType, string name)
+		=> x.opcode == OpCodes.Call
+			&& x.operand is MethodInfo m
+			&& m.DeclaringType == declaringType
+			&& m.Name == name;
 
 	/// <summary>
 	/// True if the opcode is <see cref="OpCodes.Callvirt"/> and the method name matches.

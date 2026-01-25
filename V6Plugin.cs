@@ -186,6 +186,7 @@ public partial class V6Plugin : BaseUnityPlugin, IModMenuCustomMenu {
 		hc.BOUNCE_VELOCITY *= -1;
 		hc.FLOAT_SPEED *= -1;
 		hc.JUMP_SPEED *= -1;
+		hc.JUMP_SPEED_UPDRAFT_EXIT *= -1; // also used by balloon bounces, for some reason
 
 		hc.WALLSLIDE_ACCEL *= -1;
 		hc.WALLSLIDE_SHUTTLECOCK_VEL *= -1;

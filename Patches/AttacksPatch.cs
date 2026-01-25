@@ -60,7 +60,7 @@ internal static class AttacksPatch {
 	[HarmonyPriority(Priority.Last)]
 	private static void FlipDownspikeEnd(HeroController __instance) {
 		UnityEngine.Debug.Log("downspike END");
-		if (V6Plugin.GravityIsFlipped && __instance.rb2d.linearVelocity.y < 0) {
+		if (V6Plugin.GravityIsFlipped && !__instance.cState.floating && !__instance.startWithBalloonBounce) {
 			V6Plugin.FlipHeroVelocity();
 		}
 	}
